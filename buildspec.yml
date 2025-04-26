@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo "No build steps needed for this static website."
+      - echo "Copying files to S3..."
+  post_build:
+    commands:
+      - echo "Build complete, preparing to deploy"
+      - |
+        if [ "$deployment_env" == "staging" ]; then
+          aws s3 sync . s3://henoks-staging-bucket --delete;
+          echo "Deploy to staging complete, invalidating staging CloudFront cache";
+          aws cloudfront create-invalidation --distribution-id E309HH8JI5VD12 --paths "/*";
+        elif [ "$deployment_env" == "production" ]; then
+          aws s3 sync . s3://henoks-s3-bucket --delete;
+          echo "Deploy to production complete, invalidating production CloudFront cache";
+          aws cloudfront create-invalidation --distribution-id E975JPCF6OQE --paths "/*";
+        else
+          echo "Unknown environment: $deployment_env";
+          exit 1;
+        fi
+
+artifacts:
+  files:
+    - '**/*'

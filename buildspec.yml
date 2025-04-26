@@ -1,5 +1,9 @@
 version: 0.2
 
+env:
+  variables:
+    deployment_env: "production"  # Make sure this is set
+
 phases:
   build:
     commands:
